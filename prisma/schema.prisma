@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum PermissionType {
+  READ
+  WRITE
+  EXECUTE
+}
+
+model Permission {
+  id          Int             @id @default(autoincrement())
+  type        PermissionType  
+  userId      Int  
+  enabled     Boolean 
+  directoryId Int?
+  fileId      Int?
+  directory   Directory?    @relation(fields: [directoryId], references: [id], onDelete: Cascade)
+  file        File?         @relation(fields: [fileId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime? @default(now())
+  email     String      @unique
+  name      String
+  password  String
+  rootDirId Int?
+  role      Role        @default(USER)
+}
+
+model File {
+  id              Int       @id @default(autoincrement())
+  content         String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @default(now())
+  name            String
+  path            String
+  parentId        Int
+  ownerId         Int
+  permissions     Permission[] 
+  @@unique([name, parentId])
+}
+
+model Directory {
+  id              Int       @id @default(autoincrement())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime? @default(now())
+  name            String    
+  path            String
+  parentId        Int?
+  ownerId         Int
+  permissions     Permission[]
+  @@unique([name, parentId])
+}

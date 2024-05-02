@@ -1,0 +1,18 @@
+FROM node:20
+
+ARG JWT_SECRET
+ARG BACKEND_DOMAIN
+ARG DATABASE_URL
+ENV JWT_SECRET ${JWT_SECRET}
+ENV BACKEND_DOMAIN ${BACKEND_DOMAIN}
+ENV DATABASE_URL ${DATABASE_URL}
+
+WORKDIR /app
+COPY package*.json .
+RUN npm ci
+COPY . .
+
+RUN npx prisma generate
+RUN npm run build
+EXPOSE 8080
+CMD ["node", "dist/entrypoint.js"]
